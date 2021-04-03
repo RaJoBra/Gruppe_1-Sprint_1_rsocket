@@ -66,9 +66,21 @@ public class rSocketController {
         if(stockExchange.get_id().equals(request)) {
             return stockExchange;
         } else {
-            throw new Exception("404_NOTFOUND");
+            throw new Exception("404_NOT_FOUND");
         }
         
+    }
+
+    @MessageMapping("stream")
+    Flux<StockExchange> stream(Integer streamDuration) throws Exception{
+        log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
+        if(streamDuration > 0 ) {
+            throw new Exception("400_BAD_REQUEST");
+        } else {
+            return Flux
+                    .interval(Duration.ofSeconds(streamDuration)) // Stream Duration in Seconds and not in Minuts
+                    .map(index -> new StockExchange() );
+        }
     }
 }
 
