@@ -1,12 +1,15 @@
 package com.jbgbh.rSocket;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.annotation.ConnectMapping;
 import org.springframework.stereotype.Controller;
+import reactor.core.publisher.Flux;
 
 import javax.annotation.PreDestroy;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,5 +54,16 @@ public class rSocketController {
                 .retrieveFlux(String.class)
                 .doOnNext(s -> log.info("Client: {} Free Memory: {}.",client,s))
                 .subscribe();
+    }
+}
+
+@Slf4j
+class ClientHandler {
+
+    @MessageMapping("client-status")
+    public Flux<String> statusUpdate(String status) {
+        log.info("Connection {}", status);
+        //return Mono.just(System.getProperty("java.vendor") + " v" + System.getProperty("java.version"));
+        return Flux.interval(Duration.ofSeconds(5)).map(index -> String.valueOf(Runtime.getRuntime().freeMemory()));
     }
 }
