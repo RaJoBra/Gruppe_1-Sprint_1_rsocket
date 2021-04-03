@@ -6,8 +6,7 @@ import com.mongodb.reactivestreams.client.MongoDatabase;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ConnectionString;
 
-
-public class Database {
+public class Changestream {
     ConnectionString connString = new ConnectionString(
             "mongodb+srv://AvG:AvG_Passwort@avg.xabms.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
     );
@@ -17,5 +16,4 @@ public class Database {
             .build();
     MongoClient mongoClient = MongoClients.create(settings);
     public MongoDatabase db = mongoClient.getDatabase("AvG");
-    db.get
 }
