@@ -36,7 +36,7 @@ public class rSocketShellClient {
                 .setupData(client)
                 .rsocketStrategies(strategies)
                 .rsocketConnector(connector -> connector.acceptor(responder))
-                .connectTcp("localhost", 8080)
+                .connectTcp("127.0.0.1", 9080)
                 .block();
 
         this.rsocketRequester.rsocket()
