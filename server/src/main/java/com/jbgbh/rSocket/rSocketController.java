@@ -62,7 +62,6 @@ public class rSocketController {
         // Create Inital stockExchange Object to recive
         StockExchange stockExchange = new StockExchange();
         log.info("Received request-response request for Stock Exchange: {}", request);
-        log.info(stockExchange.get_id());
         if(stockExchange.get_id().equals(request)) {
             return stockExchange;
         } else {
@@ -74,7 +73,7 @@ public class rSocketController {
     @MessageMapping("stream")
     Flux<StockExchange> stream(Integer streamDuration) throws Exception{
         log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
-        if(streamDuration > 0 ) {
+        if(streamDuration < 0 ) {
             throw new Exception("400_BAD_REQUEST");
         } else {
             return Flux

@@ -10,6 +10,7 @@ import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
+import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
 import javax.annotation.PreDestroy;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @Slf4j
 public class rSocketShellClient {
     private final RSocketRequester rsocketRequester;
+    private static Disposable disposable;
 
     @Deprecated
     @Autowired
@@ -72,6 +74,15 @@ public class rSocketShellClient {
                 .data(10)
                 .retrieveFlux(StockExchange.class)
                 .subscribe(stockExchange -> log.info("Response: {} (Type 's' to stop.)", stockExchange));
+    }
+
+    @ShellMethod("Stops Streams or Channels.")
+    public void s() {
+        if (null != disposable) {
+            log.info("Stopping the incoming stream.");
+            disposable.dispose();
+            log.info("Stream stopped.");
+        }
     }
 }
 
