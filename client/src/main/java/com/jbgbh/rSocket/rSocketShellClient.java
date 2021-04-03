@@ -22,7 +22,7 @@ public class rSocketShellClient {
     @Deprecated
     @Autowired
     public rSocketShellClient(RSocketRequester.Builder rsocketRequesterBuilder, RSocketStrategies strategies) {
-        String client = UUID.randomUUID().toString();
+        String client = "JBGBH rSocket Client";
         log.info("Connecting using client ID: {}", client);
 
         SocketAcceptor responder = RSocketMessageHandler.responder(strategies, new ClientHandler());
