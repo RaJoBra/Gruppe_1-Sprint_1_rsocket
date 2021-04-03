@@ -62,10 +62,11 @@ public class rSocketController {
         // Create Inital stockExchange Object to recive
         StockExchange stockExchange = new StockExchange();
         log.info("Received request-response request for Stock Exchange: {}", request);
-        if(stockExchange.get_id() == request) {
+        log.info(stockExchange.get_id());
+        if(stockExchange.get_id().equals(request)) {
             return stockExchange;
         } else {
-            throw new Exception("404_NOTFOUNd");
+            throw new Exception("404_NOTFOUND");
         }
         
     }

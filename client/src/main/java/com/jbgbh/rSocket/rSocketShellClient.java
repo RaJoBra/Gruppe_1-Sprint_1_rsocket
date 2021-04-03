@@ -1,5 +1,6 @@
 package com.jbgbh.rSocket;
 
+import com.jbgbh.rSocket.entity.StockExchange;
 import io.rsocket.SocketAcceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
 import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
 import reactor.core.publisher.Flux;
 
 import javax.annotation.PreDestroy;
@@ -51,6 +53,16 @@ public class rSocketShellClient {
         rsocketRequester.rsocket().dispose();
     }
 
+    @ShellMethod("Send one request. One response will be printed.")
+    public void requestResponse() throws Exception {
+        log.info("\n Sending one request. Waiting for one response...");
+        StockExchange stockExchange = this.rsocketRequester
+                .route("request-response")
+                .data("1") // Hard coded Stock Exchange id
+                .retrieveMono(StockExchange.class)
+                .block();
+        log.info("\n Response was: {}", stockExchange);
+    }
 }
 
 @Slf4j
