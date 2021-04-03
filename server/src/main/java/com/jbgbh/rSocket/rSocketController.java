@@ -1,5 +1,6 @@
 package com.jbgbh.rSocket;
 
+import com.jbgbh.rSocket.entity.StockExchange;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -54,6 +55,19 @@ public class rSocketController {
                 .retrieveFlux(String.class)
                 .doOnNext(s -> log.info("Client: {} Free Memory: {}.",client,s))
                 .subscribe();
+    }
+
+    @MessageMapping("request-response")
+    StockExchange requestResponse(String request) throws Exception {
+        // Create Inital stockExchange Object to recive
+        StockExchange stockExchange = new StockExchange();
+        log.info("Received request-response request for Stock Exchange: {}", request);
+        if(stockExchange.get_id() == request) {
+            return stockExchange;
+        } else {
+            throw new Exception("404_NOTFOUNd");
+        }
+        
     }
 }
 
