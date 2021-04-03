@@ -76,20 +76,10 @@ public class rSocketController {
         if(streamDuration < 0 ) {
             throw new Exception("400_BAD_REQUEST");
         } else {
+
             return Flux
-                    .interval(Duration.ofSeconds(streamDuration)) // Stream Duration in Seconds and not in Minuts
-                    .map(index -> new StockExchange() );
+                    .interval(Duration.ofSeconds(1)) // Stream Duration in Seconds and not in Minuts
+                    .map(index -> new StockExchange());
         }
-    }
-}
-
-@Slf4j
-class ClientHandler {
-
-    @MessageMapping("client-status")
-    public Flux<String> statusUpdate(String status) {
-        log.info("Connection {}", status);
-        //return Mono.just(System.getProperty("java.vendor") + " v" + System.getProperty("java.version"));
-        return Flux.interval(Duration.ofSeconds(5)).map(index -> String.valueOf(Runtime.getRuntime().freeMemory()));
     }
 }
