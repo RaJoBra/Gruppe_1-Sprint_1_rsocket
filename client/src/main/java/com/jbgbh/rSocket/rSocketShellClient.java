@@ -1,5 +1,8 @@
 package com.jbgbh.rSocket;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.jbgbh.rSocket.entity.Message;
 import com.jbgbh.rSocket.entity.StockExchange;
 import io.rsocket.SocketAcceptor;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +67,29 @@ public class rSocketShellClient {
                 .retrieveMono(StockExchange.class)
                 .block();
         log.info("\n Response was: {}", stockExchange);
+    }
+
+    @ShellMethod("Send one request. One response will be printed.")
+    public void createTrade() throws Exception {
+        System.out.println("Enter a new ID:");
+        String id = System.console().readLine();
+
+        System.out.println("Enter a name:");
+        String name = System.console().readLine();
+
+        StockExchange newExchange = new StockExchange(id, name);
+
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String json = ow.writeValueAsString(newExchange);
+
+        log.info("\n Sending one request. Waiting for one response...");
+        Message message = this.rsocketRequester
+                .route("create-trade")
+//                .data("{_id:\"3\",_timestamp:\"2021-04-03T23:39:51.687369800\",_name:\"NEW\"}")
+                .data(json)
+                .retrieveMono(Message.class)
+                .block();
+        log.info("\n Response was: {}", message.get_state());
     }
 
     @ShellMethod("Send one request. Many responses (stream) will be printed.")

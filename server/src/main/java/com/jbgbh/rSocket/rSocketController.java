@@ -1,5 +1,6 @@
 package com.jbgbh.rSocket;
 
+import com.jbgbh.rSocket.entity.Message;
 import com.jbgbh.rSocket.entity.StockExchange;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -62,12 +63,31 @@ public class rSocketController {
         // Create Inital stockExchange Object to recive
         StockExchange stockExchange = new StockExchange();
         log.info("Received request-response request for Stock Exchange: {}", request);
+
         if(stockExchange.get_id().equals(request)) {
             return stockExchange;
         } else {
             throw new Exception("404_NOT_FOUND");
         }
-        
+
+    }
+
+    @MessageMapping("create-trade")
+    Message createTrade(String request) throws Exception {
+        log.info("Received createTrade request for Stock Exchange: {}", request);
+
+        StockExchange proxy = new StockExchange();
+        StockExchange result = proxy.generateFromString(request);
+
+        System.out.println("result");
+        System.out.println(result);
+
+        if(result.get_id() != "-1") {
+            return new Message("Created successfully!");
+        } else {
+            throw new Exception("400_BAD_REQUEST");
+        }
+
     }
 
     @MessageMapping("stream")

@@ -21,6 +21,13 @@ public class StockExchange {
 
     }
 
+    public StockExchange(String Id, String Name) {
+        _id = Id;
+        _name = Name;
+        _timestamp = LocalDateTime.now();
+
+    }
+
     public String generateName() {
         ArrayList<String> companyNameList = new ArrayList<>();
         companyNameList.add("Amazon");
