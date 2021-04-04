@@ -1,5 +1,7 @@
 package com.jbgbh.rSocket;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.jbgbh.rSocket.entity.Message;
 import com.jbgbh.rSocket.entity.StockExchange;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +14,8 @@ import reactor.core.publisher.Flux;
 
 import javax.annotation.PreDestroy;
 import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,11 +65,16 @@ public class rSocketController {
     @MessageMapping("request-response")
     StockExchange requestResponse(String request) throws Exception {
         // Create Inital stockExchange Object to recive
-        StockExchange stockExchange = new StockExchange();
-        log.info("Received request-response request for Stock Exchange: {}", request);
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
-        if(stockExchange.get_id().equals(request)) {
-            return stockExchange;
+        String requestId = jsonObject.get("id").getAsString();
+
+        log.info("Received request-response request for Stock Exchange with ID: {}", requestId);
+
+//        TODO: SEARCH
+        if(/*stockExchange.get_id().equals(request)*/ true) {
+//            return stockExchange;
+            return new StockExchange("4", "Text4", LocalDateTime.of(2021, 4, 4, 17, 18));
         } else {
             throw new Exception("404_NOT_FOUND");
         }
@@ -76,13 +85,14 @@ public class rSocketController {
     Message createTrade(String request) throws Exception {
         log.info("Received createTrade request for Stock Exchange: {}", request);
 
-        StockExchange proxy = new StockExchange();
-        StockExchange result = proxy.generateFromString(request);
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
-        System.out.println("result");
+        StockExchange result = new StockExchange(jsonObject);
+
+        System.out.println("created new Stockexchange:");
         System.out.println(result);
 
-        if(result.get_id() != "-1") {
+        if(result.get_id() != "-1" && !(result.get_timestamp().isBefore(LocalDateTime.of(1999, 1, 1, 00, 00)))) {
             return new Message("Created successfully!");
         } else {
             throw new Exception("400_BAD_REQUEST");
@@ -99,7 +109,7 @@ public class rSocketController {
 
             return Flux
                     .interval(Duration.ofSeconds(1)) // Stream Duration in Seconds and not in Minuts
-                    .map(index -> new StockExchange());
+                    .map(index -> new StockExchange("4", "Text4", LocalDateTime.of(2021, 4, 4, 17, 18)));
         }
     }
 }

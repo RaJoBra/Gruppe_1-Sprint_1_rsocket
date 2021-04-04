@@ -1,18 +1,13 @@
 package com.jbgbh.rSocket.entity;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import lombok.Data;
 import org.apache.commons.validator.GenericValidator;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.util.Assert;
 
-import java.text.DateFormat;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Locale;
 
 @Document
 @Data
@@ -25,10 +20,10 @@ public class StockExchange {
     private String _id;
 
 
-    public StockExchange() {
-        _id = String.valueOf((ID ));
-        _name = generateName();
-        _timestamp = LocalDateTime.now();
+    public StockExchange(String id, String name, LocalDateTime time) {
+        _id = id;
+        _name = name;
+        _timestamp = time;
 
     }
 
@@ -45,10 +40,8 @@ public class StockExchange {
     }
 
     // generiere Transaktions-Datensatz aus Json
-    public StockExchange generateFromString(String input) {
-        JsonObject jsonObject = new JsonParser().parse(input).getAsJsonObject();
-        JsonObject Time = jsonObject.get("_timestamp").getAsJsonObject();
-        System.out.println(Time);
+    public StockExchange (JsonObject input) {
+        JsonObject Time = input.get("_timestamp").getAsJsonObject();
         Time createTime = new Time(
                 Time.get("year").getAsInt(),
                 Time.get("monthValue").getAsInt(),
@@ -59,37 +52,20 @@ public class StockExchange {
                 Time.get("nano").getAsInt()
         );
 
-        System.out.println("Create Time ToString");
-        System.out.println(createTime.toString());
-
-        System.out.println("Check");
-        System.out.println(GenericValidator.isDate(createTime.toString(), "yyyy-MM-dd'T'HH:mm:ss.SSSZ", true));
-
         // prüfe ob valide Werte eingetragen sind
         if(
-                jsonObject.isJsonObject()
-                && GenericValidator.isDate(createTime.toString(), "yyyy-MM-dd'T'HH:mm:ss.SSSZ", false)
-                && GenericValidator.isInt(jsonObject.get("_id").getAsString())
-                && !(GenericValidator.isBlankOrNull(jsonObject.get("_name").getAsString()))
+                input.isJsonObject()
+                && GenericValidator.isInt(input.get("_id").getAsString())
+                && !(GenericValidator.isBlankOrNull(input.get("_name").getAsString()))
         ) {
-            StockExchange result = new StockExchange();
-            result._id = jsonObject.get("_id").getAsString();
-            result._name = jsonObject.get("_name").getAsString();
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-            LocalDateTime dateTime = LocalDateTime.parse(createTime.toString(), formatter);
-
-            result._timestamp = dateTime;
-
-            return result;
+            this._timestamp = createTime.toDateTime();
+            this._id = input.get("_id").getAsString();
+            this._name = input.get("_name").getAsString();
         } else {
             // gebe ein Fehlerhaftes Objekt zurück
-            StockExchange result = new StockExchange();
-            result._id = "-1";
-            result._timestamp = LocalDateTime.now();
-            result._name = "error";
-
-            return result;
+            this._id = "-1";
+            this._timestamp = LocalDateTime.now();
+            this._name = "error";
         }
     }
 

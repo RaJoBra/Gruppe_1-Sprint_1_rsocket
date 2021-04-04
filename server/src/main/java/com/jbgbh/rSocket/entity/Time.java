@@ -1,13 +1,8 @@
 package com.jbgbh.rSocket.entity;
 
-import com.sun.jna.WString;
 import lombok.Data;
-import lombok.ToString;
 
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Data
 public class Time {
@@ -30,9 +25,15 @@ public class Time {
         this._nano = nano;
     }
 
-    public String toString() {
+    public LocalDateTime toDateTime() {
 //        return this._year + "-" + this._month + "-" + this._day + "T" + this._hour + ":" + this._minute + ":" + this._second + "." + this._nano;
-        return  String.format("%04d-%02d-%02dT%02d:%02d:%02d.%09d", this._year, this._month, this._day, this._hour, this._minute, this._second, this._nano);
+        try {
+            String timeAsString = String.format("%04d-%02d-%02dT%02d:%02d:%02d.%09d", this._year, this._month, this._day, this._hour, this._minute, this._second, this._nano);
+            return LocalDateTime.parse(timeAsString);
+        } catch (Exception e) {
+            System.out.println("invalid Date! " + this.toString());
+            return LocalDateTime.parse("1000-01-01T00:00:00.000000000");
+        }
     }
 
 }

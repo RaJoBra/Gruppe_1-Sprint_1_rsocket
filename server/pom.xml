@@ -14,8 +14,6 @@
 	<name>rSocketServer</name>
 	<description>Demo project for rSocket with Maven and spring boot </description>
 	<properties>
-		<mongodb-driver-sync.version>4.2.2</mongodb-driver-sync.version>
-        <mongodb-crypt.version>1.2.0</mongodb-crypt.version>
 		<java.version>11</java.version>
 	</properties>
 	<dependencies>
@@ -37,21 +35,6 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-		</dependency>
-		<dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>${mongodb-driver-sync.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-crypt</artifactId>
-            <version>${mongodb-crypt.version}</version>
-        </dependency>
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-mongodb</artifactId>
-			<version>3.1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
