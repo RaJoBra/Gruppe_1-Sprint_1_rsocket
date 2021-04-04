@@ -3,20 +3,16 @@ package com.jbgbh.rSocket.entity;
 import com.google.gson.JsonObject;
 import lombok.Data;
 import org.apache.commons.validator.GenericValidator;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-@Document
 @Data
 public class StockExchange {
 
     private static final Integer ID = 1;
     private String _name;
     private LocalDateTime _timestamp;
-    @Id
     private String _id;
 
 

@@ -3,8 +3,10 @@ package com.jbgbh.rSocket;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.jbgbh.rSocket.entity.Message;
+import com.jbgbh.rSocket.entity.MockDB;
 import com.jbgbh.rSocket.entity.StockExchange;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.rsocket.RSocketRequester;
@@ -19,11 +21,15 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Slf4j
 @Controller
 public class rSocketController {
 
     private final List<RSocketRequester> CLIENTS = new ArrayList<>();
+
+    @Autowired
+    MockDB mockdb;
 
     @PreDestroy
     void shutdown() {
@@ -93,7 +99,11 @@ public class rSocketController {
         System.out.println(result);
 
         if(result.get_id() != "-1" && !(result.get_timestamp().isBefore(LocalDateTime.of(1999, 1, 1, 00, 00)))) {
-            return new Message("Created successfully!");
+            if (mockdb.insert(result)) {
+                return new Message("Created successfully!");
+            } else {
+                return new Message("409_ALREADY_EXISTS");
+            }
         } else {
             throw new Exception("400_BAD_REQUEST");
         }
@@ -106,10 +116,11 @@ public class rSocketController {
         if(streamDuration < 0 ) {
             throw new Exception("400_BAD_REQUEST");
         } else {
-
             return Flux
-                    .interval(Duration.ofSeconds(1)) // Stream Duration in Seconds and not in Minuts
-                    .map(index -> new StockExchange("4", "Text4", LocalDateTime.of(2021, 4, 4, 17, 18)));
-        }
+                    .fromIterable(mockdb.db)
+                    .takeUntil(stock -> Integer.parseInt(stock.get_id()) == mockdb.db.size())
+                    .delayElements(Duration.ofSeconds(2));
+
+    }
     }
 }
