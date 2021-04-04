@@ -15,7 +15,6 @@ public class StockExchange {
     private LocalDateTime _timestamp;
     private String _id;
 
-
     public StockExchange(String id, String name, LocalDateTime time) {
         _id = id;
         _name = name;
@@ -51,12 +50,11 @@ public class StockExchange {
         // prüfe ob valide Werte eingetragen sind
         if(
                 input.isJsonObject()
-                && GenericValidator.isInt(input.get("_id").getAsString())
                 && !(GenericValidator.isBlankOrNull(input.get("_name").getAsString()))
         ) {
             this._timestamp = createTime.toDateTime();
-            this._id = input.get("_id").getAsString();
             this._name = input.get("_name").getAsString();
+            this._id = "0";
         } else {
             // gebe ein Fehlerhaftes Objekt zurück
             this._id = "-1";

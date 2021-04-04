@@ -16,14 +16,12 @@ public class MockDB {
     }};
 
     public boolean insert(StockExchange insert) {
-        if(db.stream().map(StockExchange::get_id).noneMatch(stock -> stock.equals(insert.get_id()))) {
-            System.out.println("No Stock found with id: " + insert.get_id() + " insert Object: " + insert.toString());
-            db.add(insert);
-            System.out.println("Insert successful!");
-            return true;
-        } else {
-            return false;
-        }
+        insert.set_id(""+(db.size()+1));
+        System.out.println("insert Object: " + insert.toString());
+        db.add(insert);
+        System.out.println("Insert successful!");
+        return true;
+
     }
 
     public StockExchange findById(String id) {

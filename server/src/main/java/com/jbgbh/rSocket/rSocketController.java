@@ -98,7 +98,7 @@ public class rSocketController {
         System.out.println("created new Stockexchange:");
         System.out.println(result);
 
-        if(result.get_id() != "-1" && !(result.get_timestamp().isBefore(LocalDateTime.of(1999, 1, 1, 00, 00)))) {
+        if(!result.get_id().equals("-1")) {
             if (mockdb.insert(result)) {
                 return new Message("Created successfully!");
             } else {
@@ -110,8 +110,8 @@ public class rSocketController {
 
     }
 
-    @MessageMapping("stream")
-    Flux<StockExchange> stream(Integer streamDuration) throws Exception{
+    @MessageMapping("streamall")
+    Flux<StockExchange> streamall(Integer streamDuration) throws Exception{
         log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
         if(streamDuration < 0 ) {
             throw new Exception("400_BAD_REQUEST");

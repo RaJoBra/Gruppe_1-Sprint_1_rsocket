@@ -2,6 +2,7 @@ package com.jbgbh.rSocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.jbgbh.rSocket.entity.CreateStockExchange;
 import com.jbgbh.rSocket.entity.Message;
 import com.jbgbh.rSocket.entity.StockExchange;
 import io.rsocket.SocketAcceptor;
@@ -71,13 +72,11 @@ public class rSocketShellClient {
 
     @ShellMethod("Send one request. One response will be printed.")
     public void createTrade() throws Exception {
-        System.out.println("Enter a new ID:");
-        String id = System.console().readLine();
 
         System.out.println("Enter a name:");
         String name = System.console().readLine();
 
-        StockExchange newExchange = new StockExchange(id, name);
+        CreateStockExchange newExchange = new CreateStockExchange(name);
 
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(newExchange);
@@ -93,10 +92,10 @@ public class rSocketShellClient {
     }
 
     @ShellMethod("Send one request. Many responses (stream) will be printed.")
-    public void stream() {
+    public void streamall() {
         log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
         Object disposable = this.rsocketRequester
-                .route("stream")
+                .route("streamall")
                 .data(10)
                 .retrieveFlux(StockExchange.class)
                 .subscribe(stockExchange -> log.info("Response: {} (Type 's' to stop.)", stockExchange));
