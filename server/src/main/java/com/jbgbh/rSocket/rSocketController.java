@@ -68,19 +68,19 @@ public class rSocketController {
                 .subscribe();
     }
 
-    @MessageMapping("request-response")
-    StockExchange requestResponse(String request) throws Exception {
+    @MessageMapping("find-trade")
+    StockExchange findTrade(String request) throws Exception {
         // Create Inital stockExchange Object to recive
         JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
-        String requestId = jsonObject.get("id").getAsString();
+        Integer requestId = jsonObject.get("_id").getAsInt();
 
         log.info("Received request-response request for Stock Exchange with ID: {}", requestId);
 
-//        TODO: SEARCH
-        if(/*stockExchange.get_id().equals(request)*/ true) {
-//            return stockExchange;
-            return new StockExchange("4", "Text4", LocalDateTime.of(2021, 4, 4, 17, 18));
+        StockExchange result = mockdb.findById(requestId);
+        System.out.println("result:" + result);
+        if(result.get_id() != "-1") {
+            return result;
         } else {
             throw new Exception("404_NOT_FOUND");
         }
@@ -102,7 +102,7 @@ public class rSocketController {
             if (mockdb.insert(result)) {
                 return new Message("Created successfully!");
             } else {
-                return new Message("409_ALREADY_EXISTS");
+                return new Message("500_CANNOT_REACH_DB");
             }
         } else {
             throw new Exception("400_BAD_REQUEST");
@@ -110,17 +110,48 @@ public class rSocketController {
 
     }
 
-    @MessageMapping("streamall")
-    Flux<StockExchange> streamall(Integer streamDuration) throws Exception{
+    @MessageMapping("delete-trade")
+    Message deleteTrade(String request) throws Exception {
+        // Create Inital Object to store recieved data
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
+
+        Integer requestId = jsonObject.get("_id").getAsInt();
+
+        log.info("Received delete-trade request for Stock Exchange with ID: {}", requestId);
+
+        boolean result = mockdb.deleteById(requestId);
+        System.out.println("result:" + result);
+        if(result) {
+            return new Message("Deleted trade with id " + requestId + "!");
+        } else {
+            throw new Exception("404_NOT_FOUND");
+        }
+
+    }
+
+    @MessageMapping("stream-selection")
+    Flux<StockExchange> streamSelection(String request) throws Exception{
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
+
+        Integer requestedMinutes = jsonObject.get("minutes").getAsInt();
+
+        log.info("Recevied stream requester for the duration of {} minutes", requestedMinutes);
+
+        return Flux
+                .fromIterable(mockdb.findPast(requestedMinutes))
+                .delayElements(Duration.ofSeconds(2));
+    }
+
+    @MessageMapping("stream-all")
+    Flux<StockExchange> streamAll(Integer streamDuration) throws Exception{
         log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
         if(streamDuration < 0 ) {
             throw new Exception("400_BAD_REQUEST");
         } else {
             return Flux
                     .fromIterable(mockdb.db)
-                    .takeUntil(stock -> Integer.parseInt(stock.get_id()) == mockdb.db.size())
                     .delayElements(Duration.ofSeconds(2));
 
-    }
+        }
     }
 }

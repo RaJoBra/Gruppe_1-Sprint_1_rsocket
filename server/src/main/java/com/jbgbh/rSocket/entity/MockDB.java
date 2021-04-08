@@ -1,5 +1,6 @@
 package com.jbgbh.rSocket.entity;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,8 +16,40 @@ public class MockDB {
         add(new StockExchange("3", "Google", LocalDateTime.of(2021, 4, 4, 17, 20)));
     }};
 
+    public List<StockExchange> sinceLastCheck = new ArrayList<>() {{ }};
+
+    private Integer lastLength = 0;
+
+    public List<StockExchange> findPast(Integer minutes) {
+        System.out.println("Looking Trades over the past: " + minutes + "minutes");
+        List<StockExchange> foundStocktrades = new ArrayList<>();
+        LocalDateTime currentTime = LocalDateTime.now();
+
+        LocalDateTime compareTime = currentTime.minusMinutes(minutes);
+
+        for (StockExchange stock : db) {
+            if(compareTime.isBefore(stock.get_timestamp())) {
+                foundStocktrades.add(stock);
+            }
+        }
+        return foundStocktrades;
+    }
+
     public boolean insert(StockExchange insert) {
-        insert.set_id(""+(db.size()+1));
+        Integer newId = 0;
+        Boolean searchForId = true;
+        Integer index = 1;
+
+        while (searchForId) {
+            StockExchange result = findById(index);
+            if (result.get_id() == "-1") {
+                searchForId = false;
+                newId = index;
+            }
+            index ++;
+        }
+
+        insert.set_id("" + newId);
         System.out.println("insert Object: " + insert.toString());
         db.add(insert);
         System.out.println("Insert successful!");
@@ -24,9 +57,10 @@ public class MockDB {
 
     }
 
-    public StockExchange findById(String id) {
+    public StockExchange findById(Integer id) {
+        System.out.println("Looking for:" + id);
         for (StockExchange stock : db) {
-            if(stock.get_id() == id) {
+            if(stock.get_id().equals(id.toString())) {
                 System.out.println("Found Stock By id: " + id + " Stock: " + stock.toString());
                 return stock;
             }
@@ -38,14 +72,28 @@ public class MockDB {
         return db;
     }
 
-    public boolean deleteById(String id) {
+    public boolean deleteById(Integer id) {
+        System.out.println("Looking for:" + id);
         for (StockExchange stock : db) {
-            if(stock.get_id() == id) {
+            if(stock.get_id().equals(id.toString())) {
                 System.out.println("Found Stock to remove By id: " + id + " Stock: " + stock.toString());
                 db.remove(stock);
                 return true;
             }
         }
         return false;
+    }
+
+    @Scheduled(fixedDelay=2000)
+    public void checkChanges() {
+        if(db.size() >= lastLength) {
+            sinceLastCheck = new ArrayList<>() {{ }};
+            for (int i = lastLength; i < db.size(); i++) {
+                System.out.println("new Stock since last Check: "+ db.get(i));
+                System.out.println("Stock marked for clearing and processing for batch-processing on central server!");
+                sinceLastCheck.add(db.get(i));
+            }
+            lastLength = db.size();
+        }
     }
 }

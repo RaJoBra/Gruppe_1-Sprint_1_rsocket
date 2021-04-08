@@ -2,9 +2,7 @@ package com.jbgbh.rSocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.jbgbh.rSocket.entity.CreateStockExchange;
-import com.jbgbh.rSocket.entity.Message;
-import com.jbgbh.rSocket.entity.StockExchange;
+import com.jbgbh.rSocket.entity.*;
 import io.rsocket.SocketAcceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,6 @@ import reactor.core.publisher.Flux;
 
 import javax.annotation.PreDestroy;
 import java.time.Duration;
-import java.util.UUID;
 
 @ShellComponent
 @Slf4j
@@ -60,14 +57,29 @@ public class rSocketShellClient {
     }
 
     @ShellMethod("Send one request. One response will be printed.")
-    public void requestResponse() throws Exception {
-        log.info("\n Sending one request. Waiting for one response...");
-        StockExchange stockExchange = this.rsocketRequester
-                .route("request-response")
-                .data("1") // Hard coded Stock Exchange id
-                .retrieveMono(StockExchange.class)
-                .block();
-        log.info("\n Response was: {}", stockExchange);
+    public void findTrade() throws Exception {
+
+        System.out.println("Enter the id of the Trade you want to find");
+        String id = System.console().readLine();
+
+        try {
+            Integer searchId = Integer.parseInt(id);
+
+            FindStockExchange find = new FindStockExchange(searchId);
+
+            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+            String json = ow.writeValueAsString(find);
+
+            log.info("\n Sending one request. Waiting for one response...");
+            StockExchange stockExchange = this.rsocketRequester
+                    .route("find-trade")
+                    .data(json)
+                    .retrieveMono(StockExchange.class)
+                    .block();
+            log.info("\n Response was: {}", stockExchange);
+        } catch (Exception e) {
+            System.out.println("The Input was not a valid Number");
+        }
     }
 
     @ShellMethod("Send one request. One response will be printed.")
@@ -91,14 +103,67 @@ public class rSocketShellClient {
         log.info("\n Response was: {}", message.get_state());
     }
 
+    @ShellMethod("Send one request. One response will be printed.")
+    public void deleteTrade() throws Exception {
+
+        System.out.println("Enter the id of the Trade you want to delete");
+        String id = System.console().readLine();
+
+        try {
+            Integer searchId = Integer.parseInt(id);
+
+            FindStockExchange delete = new FindStockExchange(searchId);
+
+            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+            String json = ow.writeValueAsString(delete);
+
+            log.info("\n Sending one request. Waiting for one response...");
+            Message message = this.rsocketRequester
+                    .route("delete-trade")
+                    .data(json)
+                    .retrieveMono(Message.class)
+                    .block();
+            log.info("\n Response was: {}", message.get_state());
+        } catch (Exception e) {
+            System.out.println("The Input was not a valid Number");
+        }
+    }
+
     @ShellMethod("Send one request. Many responses (stream) will be printed.")
-    public void streamall() {
+    public void streamAll() {
         log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
         Object disposable = this.rsocketRequester
-                .route("streamall")
-                .data(10)
+                .route("stream-all")
                 .retrieveFlux(StockExchange.class)
                 .subscribe(stockExchange -> log.info("Response: {} (Type 's' to stop.)", stockExchange));
+    }
+
+    @ShellMethod("Send one request. Many responses (stream) will be printed.")
+    public void streamSelection() {
+        log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
+
+        System.out.println("Enter a Duration in Minutes: ");
+        String duration = System.console().readLine();
+        Integer toWatch = 0;
+
+        try {
+            toWatch = Integer.parseInt(duration);
+            FindDuration toFind = new FindDuration(toWatch);
+
+            ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+            String json = ow.writeValueAsString(toFind);
+
+            if (toWatch != 0) {
+                Object disposable = this.rsocketRequester
+                        .route("stream-selection")
+                        .data(json)
+                        .retrieveFlux(StockExchange.class)
+                        .subscribe(stockExchange -> log.info("Response: {} (Type 's' to stop.)", stockExchange));
+            }
+        } catch (Exception e) {
+            System.out.println("The Input was not a valid Number");
+        }
+
     }
 
     @ShellMethod("Stops Streams or Channels.")
