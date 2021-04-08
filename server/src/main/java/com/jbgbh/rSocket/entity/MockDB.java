@@ -4,8 +4,10 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class MockDB {
@@ -111,7 +113,7 @@ public class MockDB {
         return false;
     }
 
-    // schedlued task to get difference in the db over past 2 seconds
+    // scheduled task to get difference in the db over past 2 seconds
     @Scheduled(fixedDelay=2000)
     public void checkChanges() {
         if(db.size() >= lastLength) {
@@ -123,5 +125,37 @@ public class MockDB {
             }
             lastLength = db.size();
         }
+    }
+
+    // generate a Date between two given datetimes
+    public LocalDateTime generateDate() {
+        long minDayTime = LocalDateTime.of(2021, 4, 9, 0, 5).toEpochSecond(ZoneOffset.ofHours(0));
+        long maxDayTime = LocalDateTime.of(2021, 4, 9, 0, 10).toEpochSecond(ZoneOffset.ofHours(0));
+        long randomDay = ThreadLocalRandom.current().nextLong(minDayTime, maxDayTime);
+        LocalDateTime randomDate = LocalDateTime.ofEpochSecond(randomDay, 0, ZoneOffset.ofHours(0));
+        System.out.println(randomDate);
+
+        return randomDate;
+    }
+
+    // generate random names
+    public String generateName() {
+        ArrayList<String> companyNameList = new ArrayList<>();
+        companyNameList.add("Amazon");
+        companyNameList.add("Google");
+        companyNameList.add("Facebook");
+        companyNameList.add("JBGBKH");
+        companyNameList.add("HSKA");
+        companyNameList.add("VW");
+
+        return companyNameList.get(((int) (Math.random() * 6 + 1) - 1));
+    }
+
+    // scheduled task to get difference in the db over past 2 seconds
+    @Scheduled(fixedDelay = 1000)
+    public void simulateTraffic() {
+        StockExchange tmp = new StockExchange(null, generateName(), generateDate());
+
+        this.insert(tmp);
     }
 }

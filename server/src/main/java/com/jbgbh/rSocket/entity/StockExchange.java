@@ -5,7 +5,6 @@ import lombok.Data;
 import org.apache.commons.validator.GenericValidator;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 @Data
 public class StockExchange {
@@ -20,18 +19,6 @@ public class StockExchange {
         _name = name;
         _timestamp = time;
 
-    }
-
-    public String generateName() {
-        ArrayList<String> companyNameList = new ArrayList<>();
-        companyNameList.add("Amazon");
-        companyNameList.add("Google");
-        companyNameList.add("Facebook");
-        companyNameList.add("JBGBKH");
-        companyNameList.add("HSKA");
-        companyNameList.add("VW");
-
-        return companyNameList.get(((int) (Math.random() * 6 + 1) - 1));
     }
 
     // generiere Transaktions-Datensatz aus Json
