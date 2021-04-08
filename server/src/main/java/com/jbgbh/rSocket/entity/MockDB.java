@@ -22,24 +22,36 @@ public class MockDB {
 
     public List<StockExchange> findPast(Integer minutes) {
         System.out.println("Looking Trades over the past: " + minutes + "minutes");
-        List<StockExchange> foundStocktrades = new ArrayList<>();
-        LocalDateTime currentTime = LocalDateTime.now();
 
+        // empty List to save found trades
+        List<StockExchange> foundStocktrades = new ArrayList<>();
+
+        // current time and time (input) minutes ago
+        LocalDateTime currentTime = LocalDateTime.now();
         LocalDateTime compareTime = currentTime.minusMinutes(minutes);
 
+        // parse db and save trades from less than (input) minutes ago
         for (StockExchange stock : db) {
             if(compareTime.isBefore(stock.get_timestamp())) {
                 foundStocktrades.add(stock);
             }
         }
+
+        // return found trades
         return foundStocktrades;
     }
 
     public boolean insert(StockExchange insert) {
+        //initial value for the id of the new trade
         Integer newId = 0;
+
+        // switch to save if an id is available or not
         Boolean searchForId = true;
+
+        // index to parse db
         Integer index = 1;
 
+        // search for every id starting from 1 to find a deleted/ free id for the new trade
         while (searchForId) {
             StockExchange result = findById(index);
             if (result.get_id() == "-1") {
@@ -51,39 +63,55 @@ public class MockDB {
 
         insert.set_id("" + newId);
         System.out.println("insert Object: " + insert.toString());
-        db.add(insert);
-        System.out.println("Insert successful!");
-        return true;
+        try {
+            db.add(insert);
 
+            System.out.println("Insert successful!");
+            return true;
+        } catch (Exception e) {
+            System.out.println("Error on Insert: " + e);
+            return false;
+        }
     }
 
     public StockExchange findById(Integer id) {
         System.out.println("Looking for:" + id);
+
+        // search for id in db and return if found
         for (StockExchange stock : db) {
             if(stock.get_id().equals(id.toString())) {
                 System.out.println("Found Stock By id: " + id + " Stock: " + stock.toString());
                 return stock;
             }
         }
-        return new StockExchange("-1", "error", LocalDateTime.now());
-    }
 
-    public List<StockExchange> getDb() {
-        return db;
+        // return an invalid object that is processed to a faulty response if no trade with id was found
+        return new StockExchange("-1", "error", LocalDateTime.now());
     }
 
     public boolean deleteById(Integer id) {
         System.out.println("Looking for:" + id);
+
+        // find trade with given id and remove it
         for (StockExchange stock : db) {
             if(stock.get_id().equals(id.toString())) {
                 System.out.println("Found Stock to remove By id: " + id + " Stock: " + stock.toString());
-                db.remove(stock);
-                return true;
+
+                // try to remove the trade and return the result
+                try {
+                    db.remove(stock);
+                    return true;
+                } catch (Exception e) {
+                    System.out.println("Error on delete: " + e);
+                    return false;
+                }
             }
         }
+        // if no trade was found return false
         return false;
     }
 
+    // schedlued task to get difference in the db over past 2 seconds
     @Scheduled(fixedDelay=2000)
     public void checkChanges() {
         if(db.size() >= lastLength) {

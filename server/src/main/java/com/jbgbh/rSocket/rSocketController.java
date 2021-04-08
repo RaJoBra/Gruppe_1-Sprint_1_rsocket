@@ -16,8 +16,6 @@ import reactor.core.publisher.Flux;
 
 import javax.annotation.PreDestroy;
 import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,15 +68,17 @@ public class rSocketController {
 
     @MessageMapping("find-trade")
     StockExchange findTrade(String request) throws Exception {
-        // Create Inital stockExchange Object to recive
+        // Create Inital object to store and parse Json date for needed values
         JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
         Integer requestId = jsonObject.get("_id").getAsInt();
 
         log.info("Received request-response request for Stock Exchange with ID: {}", requestId);
 
+        // try to find Trade with requested id
         StockExchange result = mockdb.findById(requestId);
-        System.out.println("result:" + result);
+
+        // check result and build response or return exception
         if(result.get_id() != "-1") {
             return result;
         } else {
@@ -89,16 +89,16 @@ public class rSocketController {
 
     @MessageMapping("create-trade")
     Message createTrade(String request) throws Exception {
+        // Create Inital object to store and parse Json date for needed values
         log.info("Received createTrade request for Stock Exchange: {}", request);
 
         JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
         StockExchange result = new StockExchange(jsonObject);
 
-        System.out.println("created new Stockexchange:");
-        System.out.println(result);
-
+        // check if New Stockexchange was successfully built or return exception
         if(!result.get_id().equals("-1")) {
+            // try to insert into db or throw exception
             if (mockdb.insert(result)) {
                 return new Message("Created successfully!");
             } else {
@@ -112,15 +112,17 @@ public class rSocketController {
 
     @MessageMapping("delete-trade")
     Message deleteTrade(String request) throws Exception {
-        // Create Inital Object to store recieved data
+        // Create Inital object to store and parse Json date for needed values
         JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
         Integer requestId = jsonObject.get("_id").getAsInt();
 
         log.info("Received delete-trade request for Stock Exchange with ID: {}", requestId);
 
+        // try to delete the Trade with the given id
         boolean result = mockdb.deleteById(requestId);
-        System.out.println("result:" + result);
+
+        // interpret result and build response
         if(result) {
             return new Message("Deleted trade with id " + requestId + "!");
         } else {
@@ -131,27 +133,32 @@ public class rSocketController {
 
     @MessageMapping("stream-selection")
     Flux<StockExchange> streamSelection(String request) throws Exception{
+        // Create Inital object to store and parse Json date for needed values
         JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
 
         Integer requestedMinutes = jsonObject.get("minutes").getAsInt();
 
         log.info("Recevied stream requester for the duration of {} minutes", requestedMinutes);
 
-        return Flux
-                .fromIterable(mockdb.findPast(requestedMinutes))
-                .delayElements(Duration.ofSeconds(2));
+        // check if a valid number was given or return exception
+        if(requestedMinutes < 0 ) {
+            throw new Exception("400_BAD_REQUEST");
+        } else {
+            return Flux
+                    .fromIterable(mockdb.findPast(requestedMinutes))
+                    .delayElements(Duration.ofSeconds(2));
+        }
     }
 
     @MessageMapping("stream-all")
     Flux<StockExchange> streamAll(Integer streamDuration) throws Exception{
+        // Create Inital object to store and parse Json date for needed values
         log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
-        if(streamDuration < 0 ) {
-            throw new Exception("400_BAD_REQUEST");
-        } else {
-            return Flux
-                    .fromIterable(mockdb.db)
-                    .delayElements(Duration.ofSeconds(2));
 
-        }
+        // return all db-entries as stream
+        return Flux
+                .fromIterable(mockdb.db)
+                .delayElements(Duration.ofSeconds(2));
+
     }
 }

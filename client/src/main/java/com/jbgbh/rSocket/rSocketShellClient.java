@@ -59,23 +59,29 @@ public class rSocketShellClient {
     @ShellMethod("Send one request. One response will be printed.")
     public void findTrade() throws Exception {
 
+        // userinput
         System.out.println("Enter the id of the Trade you want to find");
         String id = System.console().readLine();
 
+        // try to parse input and print out result or return exception
         try {
+            // validate input
             Integer searchId = Integer.parseInt(id);
-
             FindStockExchange find = new FindStockExchange(searchId);
 
+            // convert to json
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             String json = ow.writeValueAsString(find);
 
             log.info("\n Sending one request. Waiting for one response...");
+
+            // execute request and save result
             StockExchange stockExchange = this.rsocketRequester
                     .route("find-trade")
                     .data(json)
                     .retrieveMono(StockExchange.class)
                     .block();
+
             log.info("\n Response was: {}", stockExchange);
         } catch (Exception e) {
             System.out.println("The Input was not a valid Number");
@@ -85,44 +91,55 @@ public class rSocketShellClient {
     @ShellMethod("Send one request. One response will be printed.")
     public void createTrade() throws Exception {
 
+        // userinput
         System.out.println("Enter a name:");
         String name = System.console().readLine();
 
         CreateStockExchange newExchange = new CreateStockExchange(name);
 
+        // convert to json
         ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
         String json = ow.writeValueAsString(newExchange);
 
         log.info("\n Sending one request. Waiting for one response...");
+
+        // execute request and save result
         Message message = this.rsocketRequester
                 .route("create-trade")
-//                .data("{_id:\"3\",_timestamp:\"2021-04-03T23:39:51.687369800\",_name:\"NEW\"}")
+//                .data("{_id:\"3\",_timestamp:\"2021-04-03T23:39:51.687369800\",_name:\"NEW\"}") // TESTDATA
                 .data(json)
                 .retrieveMono(Message.class)
                 .block();
+
         log.info("\n Response was: {}", message.get_state());
     }
 
     @ShellMethod("Send one request. One response will be printed.")
     public void deleteTrade() throws Exception {
 
+        // userinput
         System.out.println("Enter the id of the Trade you want to delete");
         String id = System.console().readLine();
 
+        // try to parse input and print out result or return exception
         try {
+            // validate data
             Integer searchId = Integer.parseInt(id);
-
             FindStockExchange delete = new FindStockExchange(searchId);
 
+            // build json
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             String json = ow.writeValueAsString(delete);
 
             log.info("\n Sending one request. Waiting for one response...");
+
+            // execute request and save result
             Message message = this.rsocketRequester
                     .route("delete-trade")
                     .data(json)
                     .retrieveMono(Message.class)
                     .block();
+
             log.info("\n Response was: {}", message.get_state());
         } catch (Exception e) {
             System.out.println("The Input was not a valid Number");
@@ -142,17 +159,22 @@ public class rSocketShellClient {
     public void streamSelection() {
         log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
 
+        // userinput
         System.out.println("Enter a Duration in Minutes: ");
         String duration = System.console().readLine();
+
         Integer toWatch = 0;
 
         try {
+            // validate data
             toWatch = Integer.parseInt(duration);
             FindDuration toFind = new FindDuration(toWatch);
 
+            // convert to json
             ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
             String json = ow.writeValueAsString(toFind);
 
+            // check if input time is valid
             if (toWatch != 0) {
                 Object disposable = this.rsocketRequester
                         .route("stream-selection")
