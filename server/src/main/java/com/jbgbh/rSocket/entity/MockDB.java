@@ -77,12 +77,11 @@ public class MockDB {
     }
 
     public StockExchange findById(Integer id) {
-        System.out.println("Looking for:" + id);
 
         // search for id in db and return if found
         for (StockExchange stock : db) {
             if(stock.get_id().equals(id.toString())) {
-                System.out.println("Found Stock By id: " + id + " Stock: " + stock.toString());
+//                System.out.println("Found Stock By id: " + id + " Stock: " + stock.toString());
                 return stock;
             }
         }
@@ -129,8 +128,8 @@ public class MockDB {
 
     // generate a Date between two given datetimes
     public LocalDateTime generateDate() {
-        long minDayTime = LocalDateTime.of(2021, 4, 9, 0, 5).toEpochSecond(ZoneOffset.ofHours(0));
-        long maxDayTime = LocalDateTime.of(2021, 4, 9, 0, 10).toEpochSecond(ZoneOffset.ofHours(0));
+        long minDayTime = LocalDateTime.now().minusMinutes(15).toEpochSecond(ZoneOffset.ofHours(0));
+        long maxDayTime = LocalDateTime.now().toEpochSecond(ZoneOffset.ofHours(0));
         long randomDay = ThreadLocalRandom.current().nextLong(minDayTime, maxDayTime);
         LocalDateTime randomDate = LocalDateTime.ofEpochSecond(randomDay, 0, ZoneOffset.ofHours(0));
         System.out.println(randomDate);
