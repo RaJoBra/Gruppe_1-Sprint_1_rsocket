@@ -27,7 +27,7 @@ In the shell in the client you can now enter "request-response" or "stream" to s
 
 ## What you can do now
 In the client you can enter the following commands 
-* create-trad
+* create-trade
   * Will create a new trade 
   * User has to type in a Trade Name
 * find-trade
