@@ -25,11 +25,18 @@ If everything worked, the server will now periodically display a message that it
 
 In the shell in the client you can now enter "request-response" or "stream" to start the corresponding request.
 
-## Error
-
-The shell can not be closed in the usual way, work around is to close the powershell and restart it.
-
-## ToDo
-
-- Include method to exit spring boot shell
-- End stream after a certain time
+## What you can do now
+In the client you can enter the following commands 
+* create-trad
+  * Will create a new trade 
+  * User has to type in a Trade Name
+* find-trade
+  * User has to type in the Stock Exchange ID he is looking for 
+  * Server will send the Stock Exchange if it exist
+* delete-trade
+  * User has to type in a Stock Exchange ID he want to Delete 
+  * Stock Exchange will be deleted
+* stream-selection
+  * User has to Type in a Time Duration he wants the Trades off   
+  * The client sends all the trades that were made in the past time period
+  * *Attention*, you may have to type the number twice till the client will regonize it 

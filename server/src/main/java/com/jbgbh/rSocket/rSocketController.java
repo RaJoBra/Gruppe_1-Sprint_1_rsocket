@@ -150,15 +150,15 @@ public class rSocketController {
         }
     }
 
-    @MessageMapping("stream-all")
-    Flux<StockExchange> streamAll(Integer streamDuration) throws Exception{
-        // Create Inital object to store and parse Json date for needed values
-        log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
-
-        // return all db-entries as stream
-        return Flux
-                .fromIterable(mockdb.db)
-                .delayElements(Duration.ofSeconds(2));
-
-    }
+//    TODO: This method does not work currently
+//    @MessageMapping("stream-all")
+//    Flux<StockExchange> streamAll(Integer streamDuration) throws Exception{
+//        // Create Inital object to store and parse Json date for needed values
+//        log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
+//
+//        // return all db-entries as stream
+//        return Flux
+//                .fromIterable(mockdb.db)
+//                .delayElements(Duration.ofSeconds(2));
+//    }
 }

@@ -146,14 +146,15 @@ public class rSocketShellClient {
         }
     }
 
-    @ShellMethod("Send one request. Many responses (stream) will be printed.")
-    public void streamAll() {
-        log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
-        Object disposable = this.rsocketRequester
-                .route("stream-all")
-                .retrieveFlux(StockExchange.class)
-                .subscribe(stockExchange -> log.info("Response: {} (Type 's' to stop.)", stockExchange));
-    }
+//    TODO: This method does not work currently
+//    @ShellMethod("Send one request. Many responses (stream) will be printed.")
+//    public void streamAll() {
+//        log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
+//        Object disposable = this.rsocketRequester
+//                .route("stream-all")
+//                .retrieveFlux(StockExchange.class)
+//                .subscribe(stockExchange -> log.info("Response: {} (Type 's' to stop.)", stockExchange));
+//    }
 
     @ShellMethod("Send one request. Many responses (stream) will be printed.")
     public void streamSelection() {
