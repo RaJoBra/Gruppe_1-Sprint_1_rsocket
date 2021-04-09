@@ -1,7 +1,12 @@
 package com.jbgbh.rSocket;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.jbgbh.rSocket.entity.Message;
+import com.jbgbh.rSocket.entity.MockDB;
 import com.jbgbh.rSocket.entity.StockExchange;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.rsocket.RSocketRequester;
@@ -14,11 +19,15 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Slf4j
 @Controller
 public class rSocketController {
 
     private final List<RSocketRequester> CLIENTS = new ArrayList<>();
+
+    @Autowired
+    MockDB mockdb;
 
     @PreDestroy
     void shutdown() {
@@ -57,28 +66,99 @@ public class rSocketController {
                 .subscribe();
     }
 
-    @MessageMapping("request-response")
-    StockExchange requestResponse(String request) throws Exception {
-        // Create Inital stockExchange Object to recive
-        StockExchange stockExchange = new StockExchange();
-        log.info("Received request-response request for Stock Exchange: {}", request);
-        log.info(stockExchange.get_id());
-        if(stockExchange.get_id().equals(request)) {
-            return stockExchange;
+    @MessageMapping("find-trade")
+    StockExchange findTrade(String request) throws Exception {
+        // Create Inital object to store and parse Json date for needed values
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
+
+        Integer requestId = jsonObject.get("_id").getAsInt();
+
+        log.info("Received request-response request for Stock Exchange with ID: {}", requestId);
+
+        // try to find Trade with requested id
+        StockExchange result = mockdb.findById(requestId);
+
+        // check result and build response or return exception
+        if(result.get_id() != "-1") {
+            return result;
         } else {
-            throw new Exception("404_NOTFOUND");
+            throw new Exception("404_NOT_FOUND");
         }
-        
+
     }
-}
 
-@Slf4j
-class ClientHandler {
+    @MessageMapping("create-trade")
+    Message createTrade(String request) throws Exception {
+        // Create Inital object to store and parse Json date for needed values
+        log.info("Received createTrade request for Stock Exchange: {}", request);
 
-    @MessageMapping("client-status")
-    public Flux<String> statusUpdate(String status) {
-        log.info("Connection {}", status);
-        //return Mono.just(System.getProperty("java.vendor") + " v" + System.getProperty("java.version"));
-        return Flux.interval(Duration.ofSeconds(5)).map(index -> String.valueOf(Runtime.getRuntime().freeMemory()));
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
+
+        StockExchange result = new StockExchange(jsonObject);
+
+        // check if New Stockexchange was successfully built or return exception
+        if(!result.get_id().equals("-1")) {
+            // try to insert into db or throw exception
+            if (mockdb.insert(result)) {
+                return new Message("Created successfully!");
+            } else {
+                return new Message("500_CANNOT_REACH_DB");
+            }
+        } else {
+            throw new Exception("400_BAD_REQUEST");
+        }
+
+    }
+
+    @MessageMapping("delete-trade")
+    Message deleteTrade(String request) throws Exception {
+        // Create Inital object to store and parse Json date for needed values
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
+
+        Integer requestId = jsonObject.get("_id").getAsInt();
+
+        log.info("Received delete-trade request for Stock Exchange with ID: {}", requestId);
+
+        // try to delete the Trade with the given id
+        boolean result = mockdb.deleteById(requestId);
+
+        // interpret result and build response
+        if(result) {
+            return new Message("Deleted trade with id " + requestId + "!");
+        } else {
+            throw new Exception("404_NOT_FOUND");
+        }
+
+    }
+
+    @MessageMapping("stream-selection")
+    Flux<StockExchange> streamSelection(String request) throws Exception{
+        // Create Inital object to store and parse Json date for needed values
+        JsonObject jsonObject = new JsonParser().parse(request).getAsJsonObject();
+
+        Integer requestedMinutes = jsonObject.get("minutes").getAsInt();
+
+        log.info("Recevied stream requester for the duration of {} minutes", requestedMinutes);
+
+        // check if a valid number was given or return exception
+        if(requestedMinutes < 0 ) {
+            throw new Exception("400_BAD_REQUEST");
+        } else {
+            return Flux
+                    .fromIterable(mockdb.findPast(requestedMinutes))
+                    .delayElements(Duration.ofSeconds(2));
+        }
+    }
+
+    @MessageMapping("stream-all")
+    Flux<StockExchange> streamAll(Integer streamDuration) throws Exception{
+        // Create Inital object to store and parse Json date for needed values
+        log.info("Recevied stream requester for the duration of {} seconds", streamDuration);
+
+        // return all db-entries as stream
+        return Flux
+                .fromIterable(mockdb.db)
+                .delayElements(Duration.ofSeconds(2));
+
     }
 }
