@@ -100,7 +100,7 @@ public class rSocketController {
         if(!result.get_id().equals("-1")) {
             // try to insert into db or throw exception
             if (mockdb.insert(result)) {
-                return new Message("Created successfully!");
+                return new Message("Created successfully!, with ID "+result.get_id());
             } else {
                 return new Message("500_CANNOT_REACH_DB");
             }
